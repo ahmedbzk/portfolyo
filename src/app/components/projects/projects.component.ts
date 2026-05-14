@@ -201,7 +201,17 @@ import { CommonModule } from '@angular/common';
     }
 
     @media (max-width: 768px) {
-      .projects-grid { grid-template-columns: 1fr; }
+      .projects { padding: 80px 20px; }
+      .section-header h2 { font-size: 2.5rem; }
+      .projects-grid { 
+        grid-template-columns: 1fr; 
+        gap: 30px;
+      }
+      .project-info { padding: 25px; }
+      .project-info h3 { font-size: 1.5rem; }
+      .project-image { height: 220px; }
+      .project-overlay { opacity: 1; background: transparent; backdrop-filter: none; position: static; height: auto; padding-top: 15px; }
+      .visit-btn { transform: none; width: 100%; justify-content: center; background: var(--accent-primary); color: white; border-radius: 12px; }
     }
   `]
 })

@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
       <div class="container asset-layout">
         <div class="asset-sidebar">
           <div class="section-header">
-            <h2 class="gradient-text">Tasarım<br>Arşivi</h2>
+            <h2 class="gradient-text">Tasarım Arşivi</h2>
             <div class="underline"></div>
             <p>Marka kimliği ve dijital varlık tasarımları.</p>
           </div>
@@ -33,7 +33,7 @@ import { CommonModule } from '@angular/common';
           </div>
 
           <div class="assets-grid">
-            <div class="asset-item" *ngFor="let asset of filteredAssets()" [class.logo-item]="asset.type === 'Logo'">
+            <div class="asset-item" *ngFor="let asset of displayedAssets(); let i = index" [class.logo-item]="asset.type === 'Logo'">
               <div class="asset-card">
                 <div class="asset-image" [class.contain]="asset.type !== 'Site'" (click)="openLightbox(asset.image)">
                   <img [src]="asset.image" [alt]="asset.name">
@@ -49,10 +49,17 @@ import { CommonModule } from '@angular/common';
                       Gez ↗
                     </a>
                   </div>
-                  <p>{{asset.description}}</p>
+                  <p class="asset-desc">{{asset.description}}</p>
                 </div>
               </div>
             </div>
+          </div>
+
+          <div class="load-more-container" *ngIf="hasMoreItems()">
+            <button class="load-more-btn" (click)="loadMore()">
+              Daha Fazla Göster
+              <span class="arrow">↓</span>
+            </button>
           </div>
         </div>
       </div>
@@ -94,6 +101,9 @@ import { CommonModule } from '@angular/common';
       font-size: 3.5rem;
       line-height: 1.1;
       margin-bottom: 20px;
+      max-width: 100%;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
 
     .underline {
@@ -286,6 +296,8 @@ import { CommonModule } from '@angular/common';
     .asset-details h3 {
       font-size: 1.4rem;
       margin: 0;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
 
     .visit-btn-small {
@@ -361,10 +373,109 @@ import { CommonModule } from '@angular/common';
       to { opacity: 1; }
     }
 
+    .load-more-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 60px;
+    }
+
+    .load-more-btn {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      color: white;
+      padding: 18px 45px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      transition: all 0.4s;
+    }
+
+    .load-more-btn:hover {
+      border-color: var(--accent-primary);
+      background: rgba(99, 102, 241, 0.1);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+    }
+
+    .load-more-btn .arrow {
+      font-size: 1.2rem;
+      transition: transform 0.3s;
+    }
+
+    .load-more-btn:hover .arrow {
+      transform: translateY(5px);
+    }
+
     @media (max-width: 1100px) {
-      .asset-layout { grid-template-columns: 1fr; }
-      .asset-sidebar { position: relative; top: 0; }
-      .filter-vertical { flex-direction: row; flex-wrap: wrap; }
+      .asset-layout { 
+        display: flex;
+        flex-direction: column;
+        gap: 40px; 
+      }
+      .asset-sidebar { width: 100%; position: relative; top: 0; }
+      .section-header { text-align: center; width: 100%; }
+      .section-header h2 { font-size: 2.5rem; word-wrap: break-word; }
+      .underline { margin: 0 auto 20px; }
+      
+      .filter-vertical { 
+        flex-direction: row; 
+        overflow-x: auto; 
+        padding: 5px 0 15px;
+        scrollbar-width: none;
+        justify-content: center;
+        flex-wrap: wrap; 
+        gap: 10px;
+      }
+      .filter-vertical::-webkit-scrollbar { display: none; }
+      .filter-vertical button { 
+        white-space: nowrap; 
+        padding: 10px 18px;
+        font-size: 0.9rem;
+        background: var(--glass);
+      }
+      .filter-vertical button .dot { display: none; }
+    }
+
+    @media (max-width: 768px) {
+      .assets { padding: 60px 15px; }
+      .section-header h2 { font-size: 1.8rem; line-height: 1.2; }
+      .assets-grid { 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 12px; 
+      }
+      .asset-image { height: 160px; }
+      .asset-image.contain { padding: 15px; }
+      .asset-badge { top: 10px; right: 10px; padding: 4px 8px; font-size: 0.6rem; }
+      
+      .asset-details { padding: 15px; }
+      .asset-details h3 { font-size: 0.85rem; line-height: 1.3; }
+      .asset-desc { display: none; } /* Hide description to save vertical space */
+      .visit-btn-small { padding: 4px 10px; font-size: 0.7rem; }
+
+      .category-info { padding: 15px; text-align: center; border-left: none; border-top: 4px solid var(--accent-primary); }
+      .category-title { font-size: 1.2rem; }
+      
+      .filter-vertical { 
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        margin: 0;
+        padding: 0 0 10px;
+      }
+
+      .load-more-container { margin-top: 40px; }
+      .load-more-btn { padding: 14px 30px; font-size: 0.9rem; }
+
+      .lightbox { padding: 15px; }
+      .close-btn { top: -45px; right: 0; font-size: 2rem; }
+    }
+
+    @media (max-width: 400px) {
+      .assets-grid { grid-template-columns: 1fr; }
+      .asset-image { height: 220px; }
     }
   `]
 })
@@ -372,6 +483,7 @@ export class AssetsComponent {
   categories = ['Hepsi', 'Logo', 'Kartvizit', 'Broşür', 'Site', 'Mobil Uygulama', 'Sosyal Medya'];
   activeCategory = 'Hepsi';
   public selectedImage: string | null = null;
+  itemsToShow = 6;
 
   assetItems = [
     // LOGOS
@@ -532,6 +644,7 @@ export class AssetsComponent {
 
   setCategory(cat: string) {
     this.activeCategory = cat;
+    this.itemsToShow = 6; // Reset pagination when category changes
     const element = document.getElementById('assets');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -563,5 +676,17 @@ export class AssetsComponent {
   filteredAssets() {
     if (this.activeCategory === 'Hepsi') return this.assetItems;
     return this.assetItems.filter(item => item.type === this.activeCategory);
+  }
+
+  displayedAssets() {
+    return this.filteredAssets().slice(0, this.itemsToShow);
+  }
+
+  loadMore() {
+    this.itemsToShow += 6;
+  }
+
+  hasMoreItems() {
+    return this.itemsToShow < this.filteredAssets().length;
   }
 }

@@ -208,9 +208,39 @@ import { Component } from '@angular/core';
     }
 
     @media (max-width: 768px) {
-      .name { font-size: 3.5rem; }
-      .title { font-size: 1.8rem; }
-      .hero-btns { flex-direction: column; }
+      .hero {
+        padding: 120px 20px 60px;
+        height: auto;
+        min-height: 100vh;
+        text-align: center;
+      }
+      .hero-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .name { 
+        font-size: 3.5rem; 
+        line-height: 1.1;
+      }
+      .title { 
+        font-size: 1.8rem; 
+        margin-top: 10px;
+      }
+      .description {
+        font-size: 1rem;
+        margin-bottom: 30px;
+      }
+      .hero-btns { 
+        flex-direction: column; 
+        width: 100%;
+        gap: 15px;
+      }
+      .btn-primary, .btn-outline {
+        width: 100%;
+        padding: 15px 30px;
+      }
+      .scroll-indicator { display: none; }
     }
   `]
 })

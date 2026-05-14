@@ -6,10 +6,16 @@ import { isPlatformBrowser } from '@angular/common';
   standalone: true,
   imports: [],
   template: `
-    <header [class.scrolled]="isScrolled">
+    <header [class.scrolled]="isScrolled" [class.menu-open]="isMenuOpen">
       <div class="container header-content">
         <div class="logo">PORT<span>FOLYO</span></div>
-        <nav>
+        
+        <!-- Mobile Menu Toggle -->
+        <button class="menu-toggle" (click)="toggleMenu()" aria-label="Toggle Menu">
+          <div class="bar" [class.open]="isMenuOpen"></div>
+        </button>
+
+        <nav [class.open]="isMenuOpen">
           <ul>
             <li><a href="#hero" (click)="scrollToSection($event, 'hero')">Ana Sayfa</a></li>
             <li><a href="#about" (click)="scrollToSection($event, 'about')">Hakkımda</a></li>
@@ -58,6 +64,7 @@ import { isPlatformBrowser } from '@angular/common';
       font-weight: 800;
       letter-spacing: 1px;
       cursor: pointer;
+      z-index: 1001;
     }
 
     .logo span {
@@ -122,13 +129,78 @@ import { isPlatformBrowser } from '@angular/common';
       box-shadow: 0 15px 30px rgba(99, 102, 241, 0.3);
     }
 
+    .menu-toggle {
+      display: none;
+      width: 40px;
+      height: 40px;
+      position: relative;
+      z-index: 1001;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .bar {
+      width: 25px;
+      height: 2px;
+      background: white;
+      position: relative;
+      transition: 0.3s;
+    }
+
+    .bar::before, .bar::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: white;
+      left: 0;
+      transition: 0.3s;
+    }
+
+    .bar::before { top: -8px; }
+    .bar::after { bottom: -8px; }
+
+    .bar.open { background: transparent; }
+    .bar.open::before { transform: rotate(45deg); top: 0; }
+    .bar.open::after { transform: rotate(-45deg); bottom: 0; }
+
     @media (max-width: 768px) {
-      nav { display: none; }
+      .menu-toggle { display: flex; }
+      
+      nav {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 80%;
+        height: 100vh;
+        background: var(--bg-dark);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 1000;
+        box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+      }
+
+      nav.open { right: 0; }
+
+      nav ul {
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+      }
+
+      nav ul li a {
+        font-size: 1.5rem;
+      }
+
+      .cta { display: none; }
     }
   `]
 })
 export class HeaderComponent {
   isScrolled = false;
+  isMenuOpen = false;
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     if (isPlatformBrowser(this.platformId)) {
@@ -138,14 +210,29 @@ export class HeaderComponent {
     }
   }
 
+  toggleMenu() {
+    this.isMenuOpen = !this.isMenuOpen;
+    if (this.isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+  }
+
   scrollToSection(event: Event, sectionId: string) {
     event.preventDefault();
+    this.isMenuOpen = false;
+    document.body.style.overflow = 'auto';
+    
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-        inline: 'nearest'
+      const headerOffset = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
       });
     }
   }

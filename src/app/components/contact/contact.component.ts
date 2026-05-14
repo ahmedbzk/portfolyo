@@ -72,13 +72,58 @@ import { CommonModule } from '@angular/common';
           </div>
         </div>
       </div>
+
+      <!-- Custom Toast Notification -->
+      <div class="toast-notification" [class.show]="showNotification" [class.error]="notificationType === 'error'">
+        <div class="toast-content">
+          <span class="toast-icon">{{notificationType === 'success' ? '✅' : '❌'}}</span>
+          <p>{{notificationMessage}}</p>
+        </div>
+      </div>
     </section>
   `,
   styles: [`
     .contact {
       padding: 120px 5%;
       background: var(--bg-dark);
+      position: relative;
     }
+
+    /* Toast Notification Styles */
+    .toast-notification {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #1a1a1a;
+      border: 1px solid var(--accent-primary);
+      padding: 15px 30px;
+      border-radius: 15px;
+      z-index: 10000;
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      opacity: 0;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      min-width: 300px;
+      pointer-events: none;
+    }
+
+    .toast-notification.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .toast-notification.error {
+      border-color: #ef4444;
+    }
+
+    .toast-content {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .toast-icon { font-size: 1.5rem; }
+    .toast-content p { margin: 0; font-weight: 500; font-size: 0.95rem; color: white; }
 
     .section-header {
       text-align: center;
@@ -238,14 +283,57 @@ import { CommonModule } from '@angular/common';
       box-shadow: 0 15px 35px rgba(99, 102, 241, 0.4);
     }
 
+    .details {
+      min-width: 0;
+    }
+
+    .details h4 {
+      font-size: 1.1rem;
+      margin-bottom: 5px;
+    }
+
+    .details p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+    }
+
     @media (max-width: 992px) {
-      .contact-wrapper { grid-template-columns: 1fr; }
-      .form-row { grid-template-columns: 1fr; }
+      .contact { padding: 80px 20px; }
+      .section-header h2 { font-size: 2.2rem; }
+      .contact-wrapper { grid-template-columns: 1fr; gap: 30px; }
+      .form-row { grid-template-columns: 1fr; gap: 0; }
+      .premium-form { padding: 30px 20px; }
+      .info-link-card { 
+        padding: 20px; 
+        gap: 15px; 
+      }
+      .info-link-card .icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+      }
+      .social-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+       .info-link-card {
+         flex-direction: column;
+         text-align: center;
+         padding: 25px 15px;
+       }
+       .info-link-card .icon {
+         margin-bottom: 5px;
+       }
     }
   `]
 })
 export class ContactComponent {
   contactForm: FormGroup;
+  showNotification = false;
+  notificationMessage = '';
+  notificationType: 'success' | 'error' = 'success';
 
   constructor(private fb: FormBuilder) {
     this.contactForm = this.fb.group({
@@ -260,11 +348,53 @@ export class ContactComponent {
     return control ? control.invalid && control.touched : false;
   }
 
-  onSubmit() {
+  async onSubmit() {
     if (this.contactForm.valid) {
-      console.log('Form Submitted', this.contactForm.value);
-      alert('Mesajınız başarıyla gönderildi!');
-      this.contactForm.reset();
+      const submitBtn = document.querySelector('.submit-btn span') as HTMLElement;
+      const originalText = submitBtn.innerText;
+      submitBtn.innerText = 'Gönderiliyor...';
+
+      const emailData = {
+        service_id: 'service_pfi4bxi',
+        template_id: 'template_6wmuqep',
+        user_id: 'gBamYljfc1CFmBbR6',
+        template_params: {
+          name: this.contactForm.value.name,
+          email: this.contactForm.value.email,
+          message: this.contactForm.value.message
+        }
+      };
+
+      try {
+        const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(emailData)
+        });
+
+        if (response.ok) {
+          this.triggerNotification('Mesajınız başarıyla gönderildi! Sizinle en kısa sürede iletişime geçeceğim.', 'success');
+          this.contactForm.reset();
+        } else {
+          throw new Error('Mail gönderim hatası');
+        }
+      } catch (error) {
+        console.error('Email Error:', error);
+        this.triggerNotification('Bir hata oluştu, lütfen EmailJS ayarlarınızı (Private Key) kontrol edin.', 'error');
+      } finally {
+        submitBtn.innerText = originalText;
+      }
     }
+  }
+
+  triggerNotification(message: string, type: 'success' | 'error') {
+    this.notificationMessage = message;
+    this.notificationType = type;
+    this.showNotification = true;
+    setTimeout(() => {
+      this.showNotification = false;
+    }, 5000);
   }
 }

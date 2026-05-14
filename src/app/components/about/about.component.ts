@@ -156,9 +156,19 @@ import { CommonModule } from '@angular/common';
     }
 
     @media (max-width: 768px) {
-      .bento-grid { grid-template-columns: 1fr; }
-      .main-bio, .design-box, .skills-box, .extra-box { grid-column: span 1; }
-      .section-header h2 { font-size: 2.5rem; }
+      .about { padding: 80px 20px; }
+      .section-header h2 { font-size: 2.5rem; text-align: center; }
+      .section-header { text-align: center; }
+      .underline { margin: 0 auto; }
+      
+      .bento-grid { grid-template-columns: 1fr; gap: 20px; }
+      .main-bio, .design-box, .skills-box, .extra-box { grid-column: span 1; padding: 25px; }
+      
+      .main-bio h3 { font-size: 1.6rem; }
+      .stats { gap: 30px; justify-content: center; }
+      .stat-item .number { font-size: 2.2rem; }
+      
+      .design-apps { grid-template-columns: repeat(2, 1fr); gap: 15px; }
     }
   `]
 })
